@@ -1,27 +1,41 @@
 name: OrangeHRM Automation Framework
 
 on:
+  workflow_dispatch:
+
   push:
     branches:
       - master
-   
-- main
+      - main
 
   pull_request:
     branches:
       - master
-- main
+      - main
+
+  schedule:
+    - cron: '0 1 * * *'
+
+env:
+  PYTHON_VERSION: "3.13"
+  ENVIRONMENT: "QA"
+  BROWSER: "chromium"
+
+concurrency:
+  group: orangehrm-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
 
-  orangehrm-tests:
+  automation-tests:
 
     runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
-
       matrix:
         tag:
+          - "@smoke"
           - "@create"
           - "@update"
           - "@delete"
@@ -34,31 +48,65 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.13"
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Cache Pip Dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
 
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          pip install allure-behave bandit
 
       - name: Install Playwright Browsers
         run: |
           python -m playwright install chromium
           python -m playwright install-deps
 
-      - name: Create Artifact Folders
+      - name: Create Framework Directories
         run: |
           mkdir -p reports
+          mkdir -p reports/allure-results
+          mkdir -p reports/allure-report
           mkdir -p screenshots
           mkdir -p videos
+          mkdir -p logs
 
       - name: Execute Tests
         run: |
           python -m behave \
           --tags="${{ matrix.tag }}" \
-          --junit \
-          --junit-directory reports \
+          -f allure_behave.formatter:AllureFormatter \
+          -o reports/allure-results \
           --no-capture
+
+      - name: Generate Allure Report
+        if: always()
+        run: |
+          npm install -g allure-commandline
+          allure generate reports/allure-results \
+          -o reports/allure-report \
+          --clean
+
+      - name: Upload Allure Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report-${{ matrix.tag }}
+          path: reports/allure-report/
+
+      - name: Upload Allure Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-${{ matrix.tag }}
+          path: reports/allure-results/
 
       - name: Upload Reports
         if: always()
@@ -80,3 +128,41 @@ jobs:
         with:
           name: videos-${{ matrix.tag }}
           path: videos/
+
+      - name: Upload Logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs-${{ matrix.tag }}
+          path: logs/
+
+      - name: Security Scan
+        if: always()
+        run: |
+          bandit -r . || true
+
+      - name: Send Email Notification
+        if: always()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: OrangeHRM Automation Build - ${{ job.status }}
+
+          body: |
+            OrangeHRM Automation Execution Completed
+
+            Repository : ${{ github.repository }}
+            Branch     : ${{ github.ref_name }}
+            Workflow   : ${{ github.workflow }}
+            Status     : ${{ job.status }}
+            Tag        : ${{ matrix.tag }}
+
+            Run URL:
+            https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+          to: sanjeeviponnusamy051@gmail.com
+          from: ${{ secrets.EMAIL_USERNAME }}
