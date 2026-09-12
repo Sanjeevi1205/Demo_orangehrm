@@ -7,12 +7,10 @@ def before_scenario(context, scenario):
     context.playwright = sync_playwright().start()
 
     context.browser = context.playwright.chromium.launch(
-        headless=False,
-        slow_mo=500,
-        args=["--start-maximized"]
+        headless=True,
+        slow_mo=500
     )
 
-    # Reuse existing login session
     if os.path.exists("state.json"):
 
         context.browser_context = (
@@ -36,17 +34,10 @@ def before_scenario(context, scenario):
             )
         )
 
-    context.page = (
-        context.browser_context.new_page()
-    )
+    context.page = context.browser_context.new_page()
 
-    context.page.set_default_timeout(
-        60000
-    )
-
-    context.page.set_default_navigation_timeout(
-        60000
-    )
+    context.page.set_default_timeout(60000)
+    context.page.set_default_navigation_timeout(60000)
 
 
 def after_scenario(context, scenario):
@@ -64,13 +55,17 @@ def after_scenario(context, scenario):
             .replace("/", "_")
         )
 
-        context.page.screenshot(
-            path=f"screenshots/{screenshot_name}.png",
-            full_page=True
-        )
+        if hasattr(context, "page"):
+            context.page.screenshot(
+                path=f"screenshots/{screenshot_name}.png",
+                full_page=True
+            )
 
-    context.browser_context.close()
+    if hasattr(context, "browser_context"):
+        context.browser_context.close()
 
-    context.browser.close()
+    if hasattr(context, "browser"):
+        context.browser.close()
 
-    context.playwright.stop()
+    if hasattr(context, "playwright"):
+        context.playwright.stop()
