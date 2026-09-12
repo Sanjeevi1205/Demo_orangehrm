@@ -1,0 +1,80 @@
+name: OrangeHRM Automation Framework
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches:
+      - main
+
+jobs:
+
+  orangehrm-tests:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        tag:
+          - "@create"
+          - "@update"
+          - "@delete"
+
+    steps:
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Install Playwright Browsers
+        run: |
+          python -m playwright install chromium
+          python -m playwright install-deps
+
+      - name: Create Artifact Folders
+        run: |
+          mkdir -p reports
+          mkdir -p screenshots
+          mkdir -p videos
+
+      - name: Execute Tests
+        run: |
+          python -m behave \
+          --tags="${{ matrix.tag }}" \
+          --junit \
+          --junit-directory reports \
+          --no-capture
+
+      - name: Upload Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports-${{ matrix.tag }}
+          path: reports/
+
+      - name: Upload Screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots-${{ matrix.tag }}
+          path: screenshots/
+
+      - name: Upload Videos
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: videos-${{ matrix.tag }}
+          path: videos/
