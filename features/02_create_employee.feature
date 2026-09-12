@@ -1,6 +1,6 @@
 Feature: Employee Management
 
-  @employee @create
+  @employee @create @smoke
   Scenario: Create employee successfully
 
     Given User is on the dashboard page
@@ -14,7 +14,7 @@ Feature: Employee Management
     And Employee details should be verified through API
 
 
-  @employee @update
+  @employee @update @smoke
   Scenario Outline: Update employee successfully
 
     Given User is on the dashboard page
@@ -30,7 +30,7 @@ Feature: Employee Management
       | Jobin MathewSam |
 
 
-  @employee @delete
+  @employee @delete @smoke
   Scenario Outline: Delete employee successfully
 
     Given User is on the dashboard page

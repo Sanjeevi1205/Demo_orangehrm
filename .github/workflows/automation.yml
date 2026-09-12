@@ -36,9 +36,9 @@ jobs:
       matrix:
         tag:
           - "@smoke"
-          - "@create"
-          - "@update"
-          - "@delete"
+#          - "@create"
+#          - "@update"
+#          - "@delete"
 
     steps:
 
