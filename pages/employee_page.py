@@ -4,6 +4,7 @@ import string
 from Base_class.Lib_global import LibGlobal
 from locators.employee_locators import EmployeeLocators
 from utils.wait_helper import WaitHelper
+from utils.logger import get_logger
 
 
 class EmployeePage(LibGlobal):
@@ -510,15 +511,6 @@ class EmployeePage(LibGlobal):
             "gender": self.gender,
             "license_expiry_date": self.license_expiry_date
         }
-    # def select_employee_record(self):
-    #
-    #     self.page.locator(
-    #     EmployeeLocators.EMPLOYEE_CHECKBOX
-    #     ).first.click()
-    #
-    # print(
-    #     "Employee Record Selected"
-    # )
 
     def select_employee_record(self):
 

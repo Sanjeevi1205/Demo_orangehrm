@@ -1,6 +1,7 @@
 from Base_class.Lib_global import LibGlobal
 from locators.login_locators import LoginLocators
 from utils.wait_helper import WaitHelper
+from utils.logger import get_logger
 
 
 class LoginPage(LibGlobal):
