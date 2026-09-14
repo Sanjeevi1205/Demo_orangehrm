@@ -116,12 +116,12 @@ jobs:
           name: screenshots-${{ matrix.tag }}
           path: screenshots/
 
-      - name: Upload Videos
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: videos-${{ matrix.tag }}
-          path: videos/
+#      - name: Upload Videos
+#        if: always()
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: videos-${{ matrix.tag }}
+#          path: videos/
 
       - name: Upload Logs
         if: always()

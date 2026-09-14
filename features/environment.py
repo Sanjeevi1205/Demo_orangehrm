@@ -25,13 +25,20 @@ def before_scenario(context, scenario):
 
     else:
 
-        context.browser_context = (
-            context.browser.new_context(
-                viewport={
-                    "width": 1920,
-                    "height": 1080
-                }
-            )
+        # context.browser_context = (
+        #     context.browser.new_context(
+        #         viewport={
+        #             "width": 1920,
+        #             "height": 1080
+        #         }
+        #     )
+        context.browser_context = context.browser.new_context(
+            record_video_dir="videos/",
+            viewport={
+                "width": 1920,
+                "height": 1080
+            }
+        )
         )
 
     context.page = context.browser_context.new_page()
