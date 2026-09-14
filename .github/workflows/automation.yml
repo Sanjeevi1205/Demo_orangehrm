@@ -33,12 +33,13 @@ jobs:
 
     strategy:
       fail-fast: false
+
       matrix:
         tag:
           - "@smoke"
-#          - "@create"
-#          - "@update"
-#          - "@delete"
+    #         - "@create"
+    #         - "@update"
+    #         - "@delete"
 
     steps:
 
@@ -108,13 +109,6 @@ jobs:
           name: allure-results-${{ matrix.tag }}
           path: reports/allure-results/
 
-      - name: Upload Reports
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: reports-${{ matrix.tag }}
-          path: reports/
-
       - name: Upload Screenshots
         if: always()
         uses: actions/upload-artifact@v4
@@ -140,55 +134,30 @@ jobs:
         if: always()
         run: |
           bandit -r . || true
-          - name: Send Email Notification
-            if: always()
-            uses: dawidd6/action-send-mail@v3
-            with:
-              server_address: smtp.gmail.com
-              server_port: 465
-              secure: true
-          
-              username: ${{ secrets.EMAIL_USERNAME }}
-              password: ${{ secrets.EMAIL_PASSWORD }}
-          
-              subject: OrangeHRM Automation Execution Completed
-          
-              body: |
-                OrangeHRM Automation Framework Execution Completed.
-          
-                Repository : ${{ github.repository }}
-                Branch     : ${{ github.ref_name }}
-                Workflow   : ${{ github.workflow }}
-                Status     : ${{ job.status }}
-                Tag        : ${{ matrix.tag }}
-          
-                Run URL:
-                https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          
-              to: sanjeeviponnusamy051@gmail.com
-              from: ${{ secrets.EMAIL_USERNAME }}
-#      - name: Send Email Notification
-#        if: always()
-#        uses: dawidd6/action-send-mail@v3
-#        with:
-#          server_address: smtp.gmail.com
-#          server_port: 465
-#          secure: true
-#          username: ${{ secrets.EMAIL_USERNAME }}
-#          password: ${{ secrets.EMAIL_PASSWORD }}
-#          subject: OrangeHRM Automation Build - ${{ job.status }}
-#
-#          body: |
-#            OrangeHRM Automation Execution Completed
-#
-#            Repository : ${{ github.repository }}
-#            Branch     : ${{ github.ref_name }}
-#            Workflow   : ${{ github.workflow }}
-#            Status     : ${{ job.status }}
-#            Tag        : ${{ matrix.tag }}
-#
-#            Run URL:
-#            https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-#
-#          to: sanjeeviponnusamy051@gmail.com
-#          from: ${{ secrets.EMAIL_USERNAME }}
+
+      - name: Send Email Notification
+        if: always()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+
+          subject: OrangeHRM Automation Build - ${{ job.status }}
+
+          body: |
+            OrangeHRM Automation Framework Execution Completed
+
+            Repository : ${{ github.repository }}
+            Branch     : ${{ github.ref_name }}
+            Workflow   : ${{ github.workflow }}
+            Status     : ${{ job.status }}
+            Tag        : ${{ matrix.tag }}
+
+            Run URL:
+            https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+          to: sanjeeviponnusamy051@gmail.com
+          from: ${{ secrets.EMAIL_USERNAME }}

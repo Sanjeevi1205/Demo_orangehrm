@@ -50,15 +50,28 @@ def after_scenario(context, scenario):
         )
 
         screenshot_name = (
-            scenario.name
+            f"{scenario.name}_{scenario.status}"
             .replace(" ", "_")
             .replace("/", "_")
         )
 
         if hasattr(context, "page"):
+
+            print(
+                f"Failed URL: {context.page.url}"
+            )
+
+            screenshot_path = (
+                f"screenshots/{screenshot_name}.png"
+            )
+
             context.page.screenshot(
-                path=f"screenshots/{screenshot_name}.png",
+                path=screenshot_path,
                 full_page=True
+            )
+
+            print(
+                f"Screenshot saved: {screenshot_path}"
             )
 
     if hasattr(context, "browser_context"):
